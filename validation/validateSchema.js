@@ -8,7 +8,7 @@ function validate(schema) {
   return function (req, res, next) {
     const valid = validate(req.body);
     if (!valid) {
-      console.log('reuest not valdiate', validate.errors);
+      console.log('Request not valdiated', validate.errors);
       res.status(400).send(validate.errors);
     } else {
       next(); // call next only if valid

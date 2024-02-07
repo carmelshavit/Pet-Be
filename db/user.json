@@ -1,54 +1,12 @@
 [
+  
     {
-        "id": "jnequ0lv",
-        "firstName": "הקרייה",
-        "lastName": "אונו",
-        "password": "1234",
-        "email": "user1@example.com",
-        "phoneNumber": "+972545256147"
-    },
-    {
-        "id": "j42h1l8b",
+        "id": "rrhly8zu",
         "firstName": "yaron",
-        "lastName": "levi",
-        "password": "678",
-        "email": "user2@example.com",
-        "phoneNumber": "+972545256147"
-    },
-    {
-        "id": "r4hw21e3",
-        "firstName": "הקרייה",
         "lastName": "אונו",
-        "password": "999999",
-        "confirmPassword": "999999",
-        "email": "user3@example.com",
-        "phoneNumber": "+972545256147"
-    },
-    {
-        "id": "fszm3djm",
-        "firstName": "הקרייה",
-        "lastName": "אונו",
-        "password": "1234",
-        "confirmPassword": "1234",
-        "email": "user4@example.com",
-        "phoneNumber": "+972545256147"
-    },
-    {
-        "id": "gspyte02",
-        "firstName": "carmel",
-        "lastName": "shavit",
-        "password": "999999",
-        "confirmPassword": "999999",
-        "email": "Carmel.shavit@gmail.com",
-        "phoneNumber": "+972545256147"
-    },
-    {
-        "isAdmin": true,
-        "id": "lnvuwt0w",
-        "firstName": "sdfsdf",
-        "lastName": "dfgdfg",
-        "password": "12121",
-        "email": "dfsdfsdf@dsad.com",
-        "phoneNumber": "4234324234324"
+        "password": "$2b$10$.RBnmpS0l4rdaRHacGWdkuoGawhx/gyrp8TMKqxhk5W8fcaIlp1SO",
+        "email": "yaron.shavit@gmail.com",
+        "phoneNumber": "+972545256147",
+        "isAdmin": true
     }
 ]
