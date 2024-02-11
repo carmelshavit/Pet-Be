@@ -1,5 +1,3 @@
-const { error } = require("ajv/dist/vocabularies/applicator/dependencies");
-
 const Ajv = require("ajv").default;
 const ajv = new Ajv();
 

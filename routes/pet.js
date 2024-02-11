@@ -1,32 +1,54 @@
 const validate = require("../validation/validateSchema");
 const S = require("fluent-json-schema");
 const express = require("express");
+const auth = require("../authentication/authentication.js");
 const router = express.Router();
-const { addPet, editPet, getPetById } = require("../db/pets.js");
+const { addPet, editPet, getPetById, getPet } = require("../db/pets.js");
+
+router.get("/", async (req, res) => {
+  try {
+    const result = await getPet();
+    console.log(result);
+    res.json(result);
+  } catch (error) {
+    console.error("Error in GET / route:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 const schema = S.object()
-  .prop("Type", S.string().required())
-  .prop("Adoption Status,", S.string().required())
-  .prop("Picture,", S.string().required())
-  .prop("Height,", S.string().required())
-  .prop("Color,,", S.string().required())
-  .prop("Bio,,", S.string().required())
-  .prop("Hypoallergenic,", S.string().required())
-  .prop("dietary restrictions", S.string().required())
-  .prop("breed of animal", S.string().required())
+  .prop("type", S.string().required())
+  .prop("adoption_status", S.string().required())
+  .prop("picture", S.string().required())
+  .prop("height", S.number().required())
+  .prop("weight", S.number().required())
+  .prop("color", S.string().required())
+  .prop("bio", S.string().required())
+  .prop("hypoallergenic", S.boolean().required())
+  .prop("dietary_restrictions", S.string().required())
+  .prop("breed", S.string().required())
   .valueOf();
 
-router.post("/", validate(schema), (req, res) => {
+router.post("/", validate(schema), auth.authenticate, (req, res) => {
   try {
-    console.log("line 21", req.body);
     const data = req.body;
-    addPet(data);
-    return res.status(200).send("succesfully add pet");
+    if (req.decoded.isAdmin !== 1) {
+      return res
+        .status(403)
+        .send({ message: "Permission denied. Must be an admin." });
+    }
+    const queryResult = addPet(data);
+
+    if (!queryResult || queryResult.affectedRows === 0) {
+      return res.status(404).send("Add pet failed");
+    }
+    return res.status(200).send("Successfully add pet");
   } catch (error) {
     console.error("Error writing to file:", error);
     return res.status(500).send("Error writing to file");
   }
 });
+
 
 router.get("/:petId", async (req, res) => {
   try {
@@ -41,7 +63,6 @@ router.get("/:petId", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
 router.put("/:petId", async (req, res) => {
   try {
     const petId = req.params.petId;

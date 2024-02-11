@@ -7,13 +7,13 @@ const { getConnection } = require("./db/db");
 
 app.use(
   cors({
-    origin: "http://localhost:5174",
+    origin: "http://localhost:5173",
     methods: ["GET", "POST"],
   })
 );
 app.use(express.json());
 
-app.use("/user", allUsersFunctions);
+app.use("/users", allUsersFunctions);
 app.use("/pets", pets);
 
 const port = 3001;
