@@ -3,18 +3,25 @@ const app = express();
 const cors = require("cors");
 const allUsersFunctions = require("./routes/user");
 const pets = require("./routes/pet");
-const { getConnection } = require("./db/db");
+const cookieParser = require("cookie-parser");
+
+const {
+  getConnection,
+  // ,migrate
+} = require("./db/db");
 
 app.use(
   cors({
     origin: "http://localhost:5173",
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT"],
+    credentials: true,
   })
 );
 app.use(express.json());
+app.use(cookieParser());
 
-app.use("/users", allUsersFunctions);
-app.use("/pets", pets);
+app.use("/user", allUsersFunctions);
+app.use("/pet", pets);
 
 const port = 3001;
 
@@ -23,6 +30,7 @@ app.get("/", async (req, res) => {
   res.send("Notes application");
 });
 
+// migrate();
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });

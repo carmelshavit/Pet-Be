@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
-
-const secret = "a_very_secret_password_to_store_secretly";
+require("dotenv").config();
+// const secret = "a_very_secret_password_to_store_secretly";
 
 /**
  * Create a new token based on some data.
@@ -11,20 +11,62 @@ const secret = "a_very_secret_password_to_store_secretly";
  * @returns New generated token
  */
 function sign(data) {
-  return jwt.sign(data, secret);
+  return jwt.sign(data, process.env.SECRET);
 }
 
 function authenticate(req, res, next) {
+  // console.log(req.cookies);
   const token = req.headers.authorization.replace("Bearer ", "");
 
-  jwt.verify(token, secret, (err, decoded) => {
+  jwt.verify(token, process.env.SECRET, (err, decoded) => {
     if (err) {
       res.statusCode(401).send({ message: "Must authenticate" });
       return;
     }
+    // decoded - {id: USER_ID, isAdmin: true/false}. See 'login' endpoint
     req.decoded = decoded;
     next();
   });
 }
 
-module.exports = { authenticate, sign };
+function authenticateAdmin(req, res, next) {
+  const token = req.headers.authorization.replace("Bearer ", "");
+
+  jwt.verify(token, process.env.SECRET, (err, decoded) => {
+    if (err) {
+      res.statusCode(401).send({ message: "Must authenticate" });
+      return;
+    }
+    if (req.decoded.isAdmin !== true) {
+      res
+        .statusCode(403)
+        .send({ message: "Permission denied. Must be an admin." });
+      return;
+    }
+    // decoded - {id: USER_ID, isAdmin: true/false}. See 'login' endpoint
+    req.decoded = decoded;
+    next();
+  });
+}
+
+// function getAuthenticateMiddleware(validateIsAdmin=false) {
+//   return function authenticate(req, res, next) {
+//     const token = req.headers.authorization.replace("Bearer ", "");
+//     jwt.verify(token, secret, (err, decoded) => {
+//       if (err) {
+//         res.statusCode(401).send({ message: "Must authenticate" });
+//         return;
+//       }
+//       if (validateIsAdmin) {
+//           if (req.decoded.isAdmin !== true) {
+//              res.statusCode(403).send({ message: "Permission denied. Must be an admin." });
+//             }
+//       }
+//       // decoded - {id: USER_ID, isAdmin: true/false}. See 'login' endpoint
+//       req.decoded = decoded
+//       next();
+//     });
+//   }
+// }
+
+module.exports = { authenticateAdmin, authenticate, sign };

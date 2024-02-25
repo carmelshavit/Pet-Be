@@ -4,7 +4,8 @@ const {
   findEmailUser,
   addUserQuery,
   getUserByIdQuery,
-  getUsersQuery
+  getUsersQuery,
+  editUserQuery,
 } = require("../db/queries");
 // const SQL = require("@nearform/sql");
 const getUsers = async () => {
@@ -74,10 +75,27 @@ const getUserById = async (userId) => {
     console.error("Error fetching user by ID:", error);
   }
 };
+
+const editedUser = async (userId, editedUser) => {
+  try {
+    const connection = await getConnection();
+    const [rows] = await connection.query(editUserQuery(userId, editedUser));
+
+    if (rows.affectedRows === 0) {
+      return false;
+    } else {
+      return true;
+    }
+  } catch (error) {
+    console.error("Error updating user:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   addUser,
   login,
   getUserById,
-  getUsers
-  // edituser
+  getUsers,
+  editedUser,
 };
