@@ -1,6 +1,4 @@
 const mysql = require("mysql2/promise");
-const path = require("path");
-// const sqlMigrate = require("sql-migrations");
 const SQL_HOST = "localhost";
 const SQL_USER = "root";
 const SQL_PASSWORD = "root";

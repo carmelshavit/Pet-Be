@@ -82,39 +82,33 @@ const getPetsByAndQuery = (filters) => {
   }
   return query;
 };
-// const getPetsByAndQuery = (filters) => {
-//   let query = "SELECT * from petsdb.pets";
-//   if (!filters) {
-//     return query;
-//   }
 
-//   const conditions = Object.keys(filters).map((fieldName) => {
-//     if (filters[fieldName]) {
-//       if (Array.isArray(filters[fieldName])) {
-//         const sqlArr = filters[fieldName].map((item) => `'${item}'`).join(",");
-//         return `pet.${fieldName} IN (${sqlArr})`;
-//       } else {
-//         return `pet.${fieldName} = '${filters[fieldName]}'`;
-//       }
-//     }
-//   });
-
-//   if (conditions.length > 0) {
-//     query = query + " WHERE " + conditions.join(" AND ");
-//   }
-
-//   return query;
-// };
-
-const editUserQuery = (userId, editedUser) => {
-  `UPDATE users SET   password = '${editedUser.password}',
-  email = '${editedUser.email}',
-  first_name = '${editedUser.first_name}',
-  last_name = '${editedUser.last_name}',
-  phone_number = '${editedUser.phone_number}',
-  bio = '${editedUser.bio}'
-WHERE id = ${userId};`;
+const editUserQuery = (editedUser) => {
+  const setClauses = [];
+  if (editedUser.password) {
+    setClauses.push(`password = '${editedUser.password}'`);
+  }
+  if (editedUser.email) {
+    setClauses.push(`email = '${editedUser.email}'`);
+  }
+  if (editedUser.first_name) {
+    setClauses.push(`first_name = '${editedUser.first_name}'`);
+  }
+  if (editedUser.last_name) {
+    setClauses.push(`last_name = '${editedUser.last_name}'`);
+  }
+  if (editedUser.phone_number) {
+    setClauses.push(`phone_number = '${editedUser.phone_number}'`);
+  }
+  if (setClauses.length !== 0 && editedUser.userId) {
+    const setClause = setClauses.join(", ");
+    return `UPDATE users SET ${setClause} WHERE id = '${editedUser.userId}';`;
+  } else {
+    return "Validation error: Set clauses or user ID is missing.";
+  }
 };
+
+
 const editPetQuery = (petId, editedPet) => `
   UPDATE pets SET 
     name = '${editedPet.name}',

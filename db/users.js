@@ -31,7 +31,7 @@ const addUser = async (user) => {
     }
     const [queryResult] = await connection.query(addUserQuery(), [user]);
     console.log("User added successfully to the database!");
-    return queryResult;
+    return !queryResult.affectedRows ? false : user;
   } catch (error) {
     throw error;
   }
@@ -76,16 +76,17 @@ const getUserById = async (userId) => {
   }
 };
 
-const editedUser = async (userId, editedUser) => {
+const editUser = async (editedUser) => {
+  console.log("line 80", editedUser);
+  // console.log("line 81", userId);
   try {
     const connection = await getConnection();
-    const [rows] = await connection.query(editUserQuery(userId, editedUser));
-
-    if (rows.affectedRows === 0) {
-      return false;
-    } else {
-      return true;
+    if (editedUser.password) {
+      const password_hash = await bcrypt.hash(editedUser.password, 10);
+      editedUser.password = password_hash;
     }
+    const [rows] = await connection.query(editUserQuery(editedUser));
+    return rows.affectedRows !== 0;
   } catch (error) {
     console.error("Error updating user:", error);
     throw error;
@@ -97,5 +98,5 @@ module.exports = {
   login,
   getUserById,
   getUsers,
-  editedUser,
+  editUser,
 };

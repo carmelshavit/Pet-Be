@@ -7,7 +7,13 @@ var jwt = require("jsonwebtoken");
 // import Cookies from "react-cookie";
 // const cookies = new Cookies();
 
-const { login, addUser, getUserById, getUsers } = require("../db/users.js");
+const {
+  login,
+  addUser,
+  getUserById,
+  getUsers,
+  editUser,
+} = require("../db/users.js");
 
 router.post("/login", async (req, res) => {
   try {
@@ -23,7 +29,7 @@ router.post("/login", async (req, res) => {
       userId: user.id,
       isAdmin: isThisUserAnAdmin,
     });
-  
+
     const copy = { ...user };
     delete copy.password;
     // // token)
@@ -46,18 +52,17 @@ const schema = S.object()
   .prop("first_name", S.string().required())
   .prop("last_name", S.string().required())
   .prop("phone_number", S.string().required())
-  // .prop("liked_pet", S.number())
   .valueOf();
 
 router.post("/signup", validate(schema), async (req, res) => {
   try {
-    const data = req.body;
-    await addUser(data);
-
-    return res.status(200).send("succesfully add user");
+    const user = req.body;
+    const newUser = await addUser(user);
+    delete newUser.password;
+    return res.json(newUser);
   } catch (error) {
-    console.error("Error writing to file:", error);
-    return res.status(500).send("Error writing to file");
+    console.error("Error writing to db:", error);
+    return res.status(500).send("Error writing to db");
   }
 });
 
@@ -109,24 +114,27 @@ router.get("/:userId", async (req, res) => {
 });
 router.get("/:id/full", async (req, res) => {});
 
-router.put("/:userId", auth.authenticate, async (req, res) => {
-  try {
-    const userId = req.params.userId; // Add this line to extract userId from the route params
-    const editedUser = req.body; // Use req.body directly as editedUser
-
-    const isUpdateSuccessful = await editedUser(userId, editedUser); // Fix the function call
-
-    if (isUpdateSuccessful) {
-      res
-        .status(200)
-        .json({ success: true, message: "Updated user successfully" });
-    } else {
-      res.status(400).json({ error: "This user not found" });
+router.put(
+  "/:userId",
+  //  auth.authenticate,
+  async (req, res) => {
+    try {
+      const editedUser = req.body;
+      console.log("line 118", editedUser);
+      const updatedUser = await editUser(editedUser);
+      if (updatedUser) {
+        res.status(200).json({
+          success: true,
+          message: "Updated user successfully",
+        });
+      } else {
+        res.status(400).json({ error: "This user not found" });
+      }
+    } catch (error) {
+      console.error("line 128,Error in PUT / route:", error.message);
+      res.status(500).json({ error: "Internal server error" });
     }
-  } catch (error) {
-    console.error("line 52,Error in GET / route:", error.message);
-    res.status(500).json({ error: "Internal server error" });
   }
-});
+);
 
 module.exports = router;

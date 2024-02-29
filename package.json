@@ -11,12 +11,11 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.9.1",
-    "nodemon": "^3.0.3",
     "react-cookie": "^7.0.2"
   },
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js "
+    "dev": "node --watch server.js "
   },
   "name": "pet-be-carmelshavit",
   "version": "1.0.0",
