@@ -23,16 +23,16 @@ router.post("/login", async (req, res) => {
       res.status(401).json({ error: "User not found" });
       return;
     }
+    // const likedPetId = req.body.likedPetId;
+    // user.likedPetIds.push(likedPetId);
 
     const isThisUserAnAdmin = user.is_admin === 1;
     const token = auth.sign({
       userId: user.id,
       isAdmin: isThisUserAnAdmin,
     });
-
     const copy = { ...user };
     delete copy.password;
-    // // token)
     res.json({
       user: {
         ...copy,

@@ -6,6 +6,7 @@ const {
   getUserByIdQuery,
   getUsersQuery,
   editUserQuery,
+  getLikeQuery,
 } = require("../db/queries");
 // const SQL = require("@nearform/sql");
 const getUsers = async () => {
@@ -29,6 +30,8 @@ const addUser = async (user) => {
     if (existingUser.length > 0) {
       throw new Error("User with this email already exists.");
     }
+    user.likedPetIds = [];
+
     const [queryResult] = await connection.query(addUserQuery(), [user]);
     console.log("User added successfully to the database!");
     return !queryResult.affectedRows ? false : user;
@@ -62,6 +65,7 @@ const login = async (email, password) => {
 const getUserById = async (userId) => {
   try {
     const connection = await getConnection();
+    await getUserLikes("19c8094-d701-11ee-a52b-b05cda40fd65");
     const [rows] = await connection.query(getUserByIdQuery(userId));
     if (rows.length === 0) {
       return null;
@@ -69,12 +73,26 @@ const getUserById = async (userId) => {
       const user = rows[0];
       return user;
     }
-    // Process the user data or return it as needed
   } catch (error) {
-    // Handle any errors that occur during the database query
     console.error("Error fetching user by ID:", error);
   }
 };
+async function getUserLikes(userId) {
+  console.log("yaron");
+  try {
+    const connection = await getConnection();
+    const [rows] = await connection.query(getLikeQuery(userId));
+    if (rows.length === 0) {
+      return [];
+    } else {
+      const userLikes = rows.map((row) => row.like);
+      console.log("line 90", userLikes);
+    }
+  } catch (error) {
+    console.error("Error fetching user likes:", error);
+    throw error;
+  }
+}
 
 const editUser = async (editedUser) => {
   console.log("line 80", editedUser);

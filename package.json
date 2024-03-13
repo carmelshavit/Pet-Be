@@ -15,7 +15,8 @@
   },
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js "
+    "dev": "nodemon server.js ",
+    "test": "vitest"
   },
   "name": "pet-be-carmelshavit",
   "version": "1.0.0",
@@ -23,5 +24,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "express-print-routes": "^1.0.0",
+    "vitest": "^1.3.1"
+  }
 }

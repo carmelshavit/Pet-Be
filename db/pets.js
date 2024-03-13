@@ -2,12 +2,23 @@ const { response } = require("express");
 const { getConnection } = require("../db/db");
 const {
   addPetQuery,
-  getPetsQuery,
-  getPetByIdQuery,
   getPetsByAndQuery,
   editPetQuery,
+  addLikeQuery,
+  getLikeQuery,
+  removeLikeQuery,
 } = require("../db/queries");
 
+// const getPets = async (filters) => {
+//   try {
+//     const connection = await getConnection();
+//     const [queryResult] = await connection.query(getPetsByAndQuery(filters));
+//     return queryResult;
+//   } catch (err) {
+//     console.log("Error from server:", err.message);
+//     throw err;
+//   }
+// };
 const getPets = async (filters) => {
   try {
     const connection = await getConnection();
@@ -30,30 +41,51 @@ const addPet = async (pet) => {
   }
 };
 
-// const getPetById = async (petId) => {
-//   console.log("line 26", petId);
-//   try {
-//     const connection = await getConnection();
-//     const [rows] = await connection.query(getPetByIdQuery(petId));
-
-//     if (rows.length === 0) {
-//       return null;
-//     }
-//     const pet = jsonData.find((pet) => {
-//       console.log("Checking pet:", pet);
-//       return pet.id === petId;
-//     });
-//     console.log("Final pet:", pet);
-//   } catch (err) {
-//     console.log("Error from server:", err.message);
-//     throw err;
-//   }
-// };
-const getPetById = async (petId) => {
-  console.log("line 26", petId);
+const getLike = async () => {
+  // console.log(userId, petId);
   try {
     const connection = await getConnection();
-    const [rows] = await connection.query(getPetByIdQuery(), [petId]);
+    const [queryResult] = await connection.query(
+      `SELECT * FROM petsdb.pet_status WHERE user_id = "${userId}" AND pet_id = "${petId}"`
+    );
+    connection.release();
+    return queryResult;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const addLike = async (userId, petId) => {
+  console.log(userId, petId);
+  try {
+    const connection = await getConnection();
+    const [queryResult] = await connection.query(addLikeQuery(userId, petId));
+    connection.release();
+    return queryResult;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const removeLike = async (userId, petId) => {
+  console.log(petId);
+  try {
+    const connection = await getConnection();
+    const [queryResult] = await connection.query(
+      removeLikeQuery(userId, petId)
+    );
+    // connection.release();
+    return queryResult;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getPetById = async (id) => {
+  console.log("line 26", id);
+  try {
+    const connection = await getConnection();
+    const [rows] = await connection.query(getPetsByAndQuery({ id }));
 
     if (rows.length === 0) {
       return null;
@@ -70,12 +102,12 @@ const getPetById = async (petId) => {
 };
 
 const editPet = async (petId, editedPet) => {
-  console.log("line 26", editedPet);
+  console.log("Edited Pet:", editedPet);
   try {
     const connection = await getConnection();
-    const [rows] = await connection.query(editPetQuery(petId, editedPet));
-    console.log("line 76", rows);
-    if (rows.length === 0) {
+    const [rows] = await connection.query(editPetQuery(petId, editedPet)); // Pass petId to editPetQuery
+    console.log("Rows:", rows);
+    if (rows.affectedRows === 0) {
       return false;
     } else {
       return true;
@@ -86,4 +118,12 @@ const editPet = async (petId, editedPet) => {
   }
 };
 
-module.exports = { addPet, getPetById, getPets, editPet };
+module.exports = {
+  getLike,
+  addLike,
+  addPet,
+  getPetById,
+  getPets,
+  editPet,
+  removeLike,
+};

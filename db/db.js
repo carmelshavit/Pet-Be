@@ -18,31 +18,7 @@ const getConnection = async () => {
   console.log("Database connected");
   return connection;
 };
-// const postgrator = new Postgrator({
-//   migrationDirectory: path.resolve(__dirname, "../migrations"),
-//   host: SQL_HOST,
-//   user: SQL_USER,
-//   password: SQL_PASSWORD,
-//   database: SQL_DATABASE,
-//   port: SQL_PORT,
-//   driver: "mysql",
-//   schemaTable: "migrations",
-// });
 
-// var configuration = {
-//   migrationsDir: path.resolve(__dirname, "../migrations"), // This is the directory that should contain your SQL migrations.
-//   host: SQL_HOST,
-//   user: SQL_USER,
-//   password: SQL_PASSWORD,
-//   port: SQL_PORT,
-//   db: SQL_DATABASE,
-//   adapter: 'mysql',
-// };
-
-// const migrate = function () {
-//   // Call migrate() as an async function
-//   sqlMigrate.migrate(configuration);
-// };
 module.exports = {
   pool,
   getConnection,

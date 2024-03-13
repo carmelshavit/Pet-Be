@@ -13,7 +13,7 @@ const {
 app.use(
   cors({
     origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
 );
@@ -27,8 +27,10 @@ const port = 3001;
 
 app.get("/", async (req, res) => {
   await getConnection();
-  res.send("Notes application");
+  res.send("Pets application");
 });
+
+require("express-print-routes")(app, "routes.txt");
 
 // migrate();
 app.listen(port, () => {
