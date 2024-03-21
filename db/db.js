@@ -15,7 +15,7 @@ const pool = mysql.createPool({
 
 const getConnection = async () => {
   const connection = await pool.getConnection();
-  console.log("Database connected");
+  //console.log("Database connected");
   return connection;
 };
 

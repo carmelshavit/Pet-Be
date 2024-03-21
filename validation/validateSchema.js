@@ -6,11 +6,11 @@ function validate(schema) {
   return function (req, res, next) {
     const valid = validate(req.body);
     if (!valid) {
-      console.log('Request not valdiated', validate.errors);
+      //console.log('Request not valdiated', validate.errors);
       res.status(400).send(validate.errors);
     } else {
       next(); // call next only if valid
     }
-  }
+  };
 }
-module.exports = validate
+module.exports = validate;

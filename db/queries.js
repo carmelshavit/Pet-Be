@@ -1,31 +1,41 @@
-const { default: def } = require("ajv/dist/vocabularies/discriminator");
-const { query } = require("express");
-
 const findEmailUser = (email) => {
   return `SELECT * FROM petsdb.users WHERE email = '${email}'`;
 };
 const getUserByIdQuery = (userId) => {
   return `SELECT * FROM petsdb.users WHERE id = '${userId}'`;
 };
-const getUsersQuery = () => {
-  return "SELECT * FROM petsdb.users";
+
+const getUsersQuery = (filters) => {
+  try {
+    let query = "SELECT * from petsdb.users";
+    const conditions = [];
+
+    const filterFields = ["email", "first_name", "last_name", "phone_number"];
+
+    filterFields.forEach((fieldName) => {
+      const value = filters[fieldName];
+      if (value !== undefined && value !== "") {
+        conditions.push(`${fieldName} = ${formatSqlQueryValue(value)}`);
+      }
+    });
+
+    if (conditions.length > 0) {
+      query = query + " WHERE " + conditions.join(" AND ");
+    }
+
+    //console.log("Constructed SQL query:", query);
+    return query;
+  } catch (err) {
+    //console.log("Error from server:", err.message);
+    throw err;
+  }
 };
+
 const addUserQuery = () => {
   return `INSERT INTO petsdb.users SET ?`;
 };
 const addPetQuery = () => {
   return `INSERT INTO petsdb.pets SET ?`;
-};
-const getPetsQuery = () => {
-  return "SELECT * FROM petsdb.pets";
-};
-
-const getPetByIdQuery = (petId) => {
-  return `SELECT * FROM petsdb.pets WHERE id = '${petId}'`;
-};
-
-const getPetsByBreedTypeQuery = (petBreed, petType) => {
-  return `SELECT * FROM petsdb.pets WHERE pet.breed = '${petBreed}' AND pet.type = '${petType}'`;
 };
 
 const formatSqlQueryValue = (value) => {
@@ -39,7 +49,7 @@ const formatSqlQueryValue = (value) => {
   }
 };
 const getPetsByAndQuery = (filters) => {
-  console.log(filters);
+  //console.log(filters);
   let query = "SELECT * from petsdb.pets";
   if (!filters) {
     return query;
@@ -88,7 +98,7 @@ const getPetsByAndQuery = (filters) => {
   if (conditions.length > 0) {
     query = query + " WHERE " + conditions.join(" AND ");
   }
-  console.log(query);
+  //console.log(query);
   return query;
 };
 
@@ -166,19 +176,41 @@ const editPetQuery = (petId, editedPet) => {
 const addLikeQuery = (userId, petId) => {
   return `INSERT INTO petsdb.pet_status (userId, petId) VALUES("${userId}", "${petId}")`;
 };
-const getLikeQuery = (userId, petId) => {
-  return `SELECT * FROM petsdb.pet_status WHERE userId = "${userId}" AND petId = "${petId}"`;
-};
-const removeLikeQuery = (userId, petId) => {
-  //correct
-  return `DELETE FROM petsdb.pet_status WHERE userId = '${userId}' 
-  AND petId = ${petId}`;
-  //Not correct
-  // return `DELETE FROM petsdb.pet_status (userId, petId) WHERE userId = ${userId}
-  // AND petId = ${petId}`;
+const getLikedPetsQuery = (likedPetIds) => {
+  // Constructing the SQL query string with parameterized query
+  return `SELECT * FROM petsdb.pets WHERE id IN (${likedPetIds})`;
 };
 
-//TODO- ID for like include petId userId.
+const getLikesQuery = (userId) => {
+  return `SELECT * FROM petsdb.pet_status WHERE userId = '${userId}'`;
+};
+const returnPetQuery = (petId) => {
+  return {
+    sql: `UPDATE petsdb.pets SET adoptedBy=NULL WHERE id = ${1}`,
+    values: [petId],
+  };
+};
+
+// const adoptPetQuery = (userId, petId) => {
+//   return {
+//     sql: `SELECT * FROM petsdb.pets p INNER JOIN users u ON p.adoptedBy = u.id WHERE u.id = ${1} AND p.id =${2}`,
+//     values: [userId, petId],
+//   };
+// };
+
+const adoptPetQuery = (petId, userId) => {
+  return {
+    sql: "UPDATE petsdb.pets SET adoptedBy = ? WHERE id = ?",
+    values: [userId, petId],
+  };
+};
+
+const removeLikeQuery = (userId, petId) => {
+  return {
+    sql: "DELETE FROM petsdb.pet_status WHERE userId = ? AND petId = ?",
+    values: [userId, petId],
+  };
+};
 
 // sortBy the pets that user did like:(`
 //     SELECT * FROM users
@@ -189,15 +221,15 @@ module.exports = {
   findEmailUser,
   addUserQuery,
   addPetQuery,
-  getPetsQuery,
-  getPetByIdQuery,
   editPetQuery,
   getUserByIdQuery,
   getUsersQuery,
   editUserQuery,
-  getPetsByBreedTypeQuery,
   getPetsByAndQuery,
   addLikeQuery,
-  getLikeQuery,
+  getLikesQuery,
   removeLikeQuery,
+  returnPetQuery,
+  adoptPetQuery,
+  getLikedPetsQuery,
 };

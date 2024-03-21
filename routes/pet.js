@@ -10,18 +10,10 @@ const {
   getPets,
   addLike,
   removeLike,
+  returnPet,
+  adoptedPet,
+  getLikedPets,
 } = require("../db/pets.js");
-
-router.get("/", async (req, res) => {
-  try {
-    const filters = req.query;
-    const result = await getPets(filters);
-    res.json(result);
-  } catch (error) {
-    console.error("Error in GET / route:", error.message);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
 
 const schema = S.object()
   .prop("type", S.string().required())
@@ -42,7 +34,7 @@ router.post(
   auth.authenticate,
   (req, res) => {
     try {
-      console.log(req);
+      //console.log(req);
       const data = req.body;
       if (req.decoded.isAdmin !== true) {
         return res
@@ -65,16 +57,28 @@ router.post(
   }
 );
 
+router.post("/like", async (req, res) => {
+  // console.log("line 61", req);
+  try {
+    const likedPetIds = req.body;
+    console.log("line 62", likedPetIds);
+    const petsData = await getLikedPets(likedPetIds);
+    res.json(petsData);
+    console.log("line 67", petsData);
+  } catch (error) {
+    console.error("line 66, Error in GET / route:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 router.get("/", async (req, res) => {
   try {
-    const filters = req.query; // Use req.query to get the parameters from the query string
-    const petsData = await getPetsByAndQuery(filters); // Pass the filters to the function
-
-    console.log("line 37", petsData);
-
+    const filters = req.query;
+    console.log("line 73", filters); // Use req.query to get the parameters from the query string
+    const petsData = await getPets(filters); // Pass the filters to the function
     res.json(petsData); // Send the pet data as the response
   } catch (error) {
-    console.error("line 52, Error in GET / route:", error.message);
+    console.error("line 77, Error in GET / route:", error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -82,10 +86,10 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const petId = req.params.id;
-    console.log(petId);
+    //console.log(petId);
     const pet = await getPetById(petId); // Wait for the asynchronous operation to complete
 
-    console.log("line 80", pet);
+    //console.log("line 80", pet);
 
     res.json(pet);
   } catch (error) {
@@ -119,13 +123,35 @@ router.put(
 router.post("/:id/return", auth.authenticate, async (req, res) => {
   const petId = req.params.id;
 
-  const queryResult = returnPet(data);
+  const queryResult = returnPet(petId);
 
   if (!queryResult || queryResult.affectedRows === 0) {
-    return res.status(404).json({ error: "return pet failed" });
+    res.status(404).json({ error: "return pet failed" });
+  }
+
+  res.json({ message: "return pet successfully" });
+});
+router.post("/:id/adopt", auth.authenticate, async (req, res) => {
+  const { id } = req.params;
+  const userId = req.decoded.userId;
+
+  console.log("Pet ID:", id);
+  console.log("User ID:", userId);
+
+  try {
+    const queryResult = await adoptedPet(id, userId); // Pass id directly to adoptedPet function
+    console.log("line 145", queryResult);
+
+    if (!queryResult || queryResult.affectedRows === 0) {
+      return res.status(404).json({ error: "Adopting pet failed" });
+    }
+
+    res.json({ id, userId });
+  } catch (error) {
+    console.error("Error adopting pet:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
-router.post("/:id/adopt", auth.authenticate, async (req, res) => {});
 
 router.post(
   "/:id/save",
@@ -134,8 +160,8 @@ router.post(
     const { id } = req.params;
     const { userId } = req.body;
     const petId = id;
-    console.log(petId);
-    console.log(userId);
+    //console.log(petId);
+    //console.log(userId);
     const queryResult = await addLike(userId, petId);
     try {
       if (!queryResult || queryResult.affectedRows === 0) {
@@ -168,25 +194,4 @@ router.delete("/:id/save", async (req, res) => {
   }
 });
 
-router.get(
-  "/:id/save",
-  // auth.authenticate,
-  async (req, res) => {
-    console.log(req);
-    const { id } = req.params;
-    const petId = id;
-    console.log(petId);
-    const queryResult = await getLike(userId, petId);
-    try {
-      if (!queryResult || queryResult.affectedRows === 0) {
-        res.status(404).send(queryResult);
-      }
-
-      res.send("Pet Like successfully!");
-    } catch (error) {
-      console.error(error);
-      res.status(500).send("An error occurred");
-    }
-  }
-);
 module.exports = router;

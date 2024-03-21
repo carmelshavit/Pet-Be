@@ -34,5 +34,5 @@ require("express-print-routes")(app, "routes.txt");
 
 // migrate();
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+  //console.log(`Example app listening at http://localhost:${port}`);
 });

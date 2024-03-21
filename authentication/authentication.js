@@ -15,7 +15,7 @@ function sign(data) {
 }
 
 function authenticate(req, res, next) {
-  // console.log(req.cookies);
+  // //console.log(req.cookies);
   const token = req.headers.authorization.replace("Bearer ", "");
 
   jwt.verify(token, process.env.SECRET, (err, decoded) => {

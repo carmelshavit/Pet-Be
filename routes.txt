@@ -14,7 +14,6 @@ router
  │    │    └── <anonymous>                         /                                                           POST
  │    │   
  │    ├── bound dispatch                           /                                                           GET
- │    │    ├── authenticateAdmin                   /                                                           GET
  │    │    └── <anonymous>                         /                                                           GET
  │    │   
  │    ├── bound dispatch                           /me                                                         GET
@@ -33,11 +32,11 @@ router
  │   
  ├── router                                        /^\/pet\/?(?=\/|$)/                                         
  │   router                                                                                                    
- │    ├── bound dispatch                           /                                                           GET
- │    │    └── <anonymous>                         /                                                           GET
- │    │   
  │    ├── bound dispatch                           /                                                           POST
  │    │    ├── authenticate                        /                                                           POST
+ │    │    └── <anonymous>                         /                                                           POST
+ │    │   
+ │    ├── bound dispatch                           /like                                                       POST
  │    │    └── <anonymous>                         /                                                           POST
  │    │   
  │    ├── bound dispatch                           /                                                           GET
@@ -60,11 +59,8 @@ router
  │    ├── bound dispatch                           /:id/save                                                   POST
  │    │    └── <anonymous>                         /                                                           POST
  │    │   
- │    ├── bound dispatch                           /:id/save                                                   DELETE
- │    │    └── <anonymous>                         /                                                           DELETE
- │    │   
- │    └── bound dispatch                           /:id/save                                                   GET
- │         └── <anonymous>                         /                                                           GET
+ │    └── bound dispatch                           /:id/save                                                   DELETE
+ │         └── <anonymous>                         /                                                           DELETE
  │        
  │   
  └── bound dispatch                                /                                                           GET

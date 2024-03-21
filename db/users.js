@@ -6,19 +6,20 @@ const {
   getUserByIdQuery,
   getUsersQuery,
   editUserQuery,
-  getLikeQuery,
 } = require("../db/queries");
 // const SQL = require("@nearform/sql");
-const getUsers = async () => {
+const getUsers = async (filters) => {
+  //console.log(filters);
   try {
     const connection = await getConnection();
-    const [queryResult] = await connection.query(getUsersQuery());
-    return queryResult;
-  } catch (err) {
-    console.log("Error from server:", err.message);
-    throw err;
+    const [rows] = await connection.query(getUsersQuery(filters));
+    console.log("line 16", rows);
+    return rows;
+  } catch (error) {
+    console.error("Error fetching users:", error);
   }
 };
+
 const addUser = async (user) => {
   const { password, email } = user;
   try {
@@ -33,7 +34,7 @@ const addUser = async (user) => {
     user.likedPetIds = [];
 
     const [queryResult] = await connection.query(addUserQuery(), [user]);
-    console.log("User added successfully to the database!");
+    //console.log("User added successfully to the database!");
     return !queryResult.affectedRows ? false : user;
   } catch (error) {
     throw error;
@@ -54,10 +55,12 @@ const login = async (email, password) => {
     if (!isMatch) {
       return null;
     } else {
+      user.likedPetIds = await getLikesArr(user.id);
+      //console.log("58", user);
       return user;
     }
   } catch (err) {
-    console.log("Error from server:", err.message);
+    //console.log("Error from server:", err.message);
     throw err;
   }
 };
@@ -65,38 +68,49 @@ const login = async (email, password) => {
 const getUserById = async (userId) => {
   try {
     const connection = await getConnection();
-    await getUserLikes("19c8094-d701-11ee-a52b-b05cda40fd65");
     const [rows] = await connection.query(getUserByIdQuery(userId));
+
     if (rows.length === 0) {
       return null;
     } else {
       const user = rows[0];
+      user.likedPetIds = await getLikesArr(userId);
+      user.adoptedPets = await getUserPetsArr(userId);
+      console.log(user);
       return user;
     }
   } catch (error) {
     console.error("Error fetching user by ID:", error);
   }
 };
-async function getUserLikes(userId) {
-  console.log("yaron");
-  try {
-    const connection = await getConnection();
-    const [rows] = await connection.query(getLikeQuery(userId));
-    if (rows.length === 0) {
-      return [];
-    } else {
-      const userLikes = rows.map((row) => row.like);
-      console.log("line 90", userLikes);
-    }
-  } catch (error) {
-    console.error("Error fetching user likes:", error);
-    throw error;
-  }
-}
+
+const getUserPetsArr = async (userId) => {
+  const connection = await getConnection();
+  const [petRows] = await connection.query(
+    `
+    SELECT *
+    FROM petsdb.pets
+    WHERE adoptedBy = ?
+  `,
+    [userId]
+  );
+
+  return petRows;
+};
+
+const getLikesArr = async (userId) => {
+  const connection = await getConnection();
+
+  const [petRows] = await connection.query(
+    `SELECT petId FROM pet_status WHERE userId = ?`,
+    [userId]
+  );
+  return petRows.map((petRow) => petRow.petId);
+};
 
 const editUser = async (editedUser) => {
-  console.log("line 80", editedUser);
-  // console.log("line 81", userId);
+  //console.log("line 80", editedUser);
+  // //console.log("line 81", userId);
   try {
     const connection = await getConnection();
     if (editedUser.password) {
@@ -117,4 +131,5 @@ module.exports = {
   getUserById,
   getUsers,
   editUser,
+  getUserPetsArr
 };
