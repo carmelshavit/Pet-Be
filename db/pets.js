@@ -121,11 +121,11 @@ const editPet = async (petId, editedPet) => {
     throw err;
   }
 };
-const returnPet = async (petId) => {
+const returnPet = async (petId, userId) => {
   //console.log("returnPet:", petId);
   try {
     const connection = await getConnection();
-    const [rows] = await connection.query(returnPetQuery(petId));
+    const [rows] = await connection.query(returnPetQuery(petId, userId));
     //console.log("Rows:", rows);
     if (rows.affectedRows === 0) {
       return false;
@@ -156,7 +156,6 @@ const adoptedPet = async (petId, userId) => {
     throw err; // Propagate the error
   }
 };
-
 
 module.exports = {
   adoptedPet,

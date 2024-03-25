@@ -6,6 +6,7 @@ const {
   getUserByIdQuery,
   getUsersQuery,
   editUserQuery,
+  getPasswordUserQuery,
 } = require("../db/queries");
 // const SQL = require("@nearform/sql");
 const getUsers = async (filters) => {
@@ -31,7 +32,7 @@ const addUser = async (user) => {
     if (existingUser.length > 0) {
       throw new Error("User with this email already exists.");
     }
-    user.likedPetIds = [];
+    // user.likedPetIds = [];
 
     const [queryResult] = await connection.query(addUserQuery(), [user]);
     //console.log("User added successfully to the database!");
@@ -108,16 +109,29 @@ const getLikesArr = async (userId) => {
   return petRows.map((petRow) => petRow.petId);
 };
 
+const checkUserPassword = async (userId, userPassword) => {
+  // Check if the current password is provided and matches the stored password
+  if (!userId || !userPassword) {
+    return false;
+  }
+
+  const connection = await getConnection();
+  const [rows] = await connection.query(getPasswordUserQuery(userId));
+
+  // TODO get stored password of user (from rows)
+  const storedPasswordHash = rows[0].password;
+  const isPasswordMatch = await bcrypt.compare(
+    userPassword,
+    storedPasswordHash
+  );
+
+  return isPasswordMatch;
+};
+
 const editUser = async (editedUser) => {
-  //console.log("line 80", editedUser);
-  // //console.log("line 81", userId);
   try {
     const connection = await getConnection();
-    if (editedUser.password) {
-      const password_hash = await bcrypt.hash(editedUser.password, 10);
-      editedUser.password = password_hash;
-    }
-    const [rows] = await connection.query(editUserQuery(editedUser));
+    const [rows] = await connection.query(editUserQuery(editedUser)); // Pass userId to editUserQuery
     return rows.affectedRows !== 0;
   } catch (error) {
     console.error("Error updating user:", error);
@@ -131,5 +145,6 @@ module.exports = {
   getUserById,
   getUsers,
   editUser,
-  getUserPetsArr
+  getUserPetsArr,
+  checkUserPassword,
 };

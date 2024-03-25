@@ -122,8 +122,9 @@ router.put(
 
 router.post("/:id/return", auth.authenticate, async (req, res) => {
   const petId = req.params.id;
+  const userId = req.decoded.userId;
 
-  const queryResult = returnPet(petId);
+  const queryResult = returnPet(petId, userId);
 
   if (!queryResult || queryResult.affectedRows === 0) {
     res.status(404).json({ error: "return pet failed" });
@@ -131,6 +132,7 @@ router.post("/:id/return", auth.authenticate, async (req, res) => {
 
   res.json({ message: "return pet successfully" });
 });
+
 router.post("/:id/adopt", auth.authenticate, async (req, res) => {
   const { id } = req.params;
   const userId = req.decoded.userId;
@@ -160,8 +162,7 @@ router.post(
     const { id } = req.params;
     const { userId } = req.body;
     const petId = id;
-    //console.log(petId);
-    //console.log(userId);
+
     const queryResult = await addLike(userId, petId);
     try {
       if (!queryResult || queryResult.affectedRows === 0) {

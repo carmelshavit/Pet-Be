@@ -1,3 +1,5 @@
+const bcrypt = require("bcrypt");
+
 const findEmailUser = (email) => {
   return `SELECT * FROM petsdb.users WHERE email = '${email}'`;
 };
@@ -102,10 +104,21 @@ const getPetsByAndQuery = (filters) => {
   return query;
 };
 
+const getPasswordUserQuery = (userId) => {
+  return `SELECT password FROM petsdb.users WHERE id = '${userId}'`;
+};
+
 const editUserQuery = (editedUser) => {
+  // Hash the new password if provided
+  if (editedUser.new_password) {
+    const newPasswordHash = bcrypt.hash(editedUser.new_password, 10);
+    editedUser.password = newPasswordHash;
+  }
+
+  // Construct the set clauses for updating user data
   const setClauses = [];
-  if (editedUser.password) {
-    setClauses.push(`password = '${editedUser.password}'`);
+  if (editedUser.new_password) {
+    setClauses.push(`password = '${editedUser.new_password}'`);
   }
   if (editedUser.email) {
     setClauses.push(`email = '${editedUser.email}'`);
@@ -119,11 +132,14 @@ const editUserQuery = (editedUser) => {
   if (editedUser.phone_number) {
     setClauses.push(`phone_number = '${editedUser.phone_number}'`);
   }
-  if (setClauses.length !== 0 && editedUser.userId) {
+  // Add other fields as needed
+
+  // Check if there are any fields to update and the user ID is provided
+  if (setClauses.length !== 0 && editedUser.id) {
     const setClause = setClauses.join(", ");
-    return `UPDATE users SET ${setClause} WHERE id = '${editedUser.userId}';`;
+    return `UPDATE users SET ${setClause} WHERE id = '${editedUser.id}';`;
   } else {
-    return "Validation error: Set clauses or user ID is missing.";
+    throw "Validation error: Set clauses or user ID is missing.";
   }
 };
 
@@ -184,10 +200,10 @@ const getLikedPetsQuery = (likedPetIds) => {
 const getLikesQuery = (userId) => {
   return `SELECT * FROM petsdb.pet_status WHERE userId = '${userId}'`;
 };
-const returnPetQuery = (petId) => {
+const returnPetQuery = (petId, userId) => {
   return {
-    sql: `UPDATE petsdb.pets SET adoptedBy=NULL WHERE id = ${1}`,
-    values: [petId],
+    sql: `UPDATE petsdb.pets SET adoptedBy=NULL WHERE id = ? AND adoptedBy = ?`,
+    values: [petId, userId],
   };
 };
 
@@ -232,4 +248,5 @@ module.exports = {
   returnPetQuery,
   adoptPetQuery,
   getLikedPetsQuery,
+  getPasswordUserQuery,
 };

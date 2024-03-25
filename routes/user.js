@@ -14,6 +14,7 @@ const {
   getUsers,
   editUser,
   getUserPetsArr,
+  checkUserPassword,
 } = require("../db/users.js");
 
 router.post("/login", async (req, res) => {
@@ -64,28 +65,30 @@ router.post("/signup", validate(schema), async (req, res) => {
   }
 });
 
-router.get("/", 
-// auth.authenticateAdmin,
- async (req, res) => {
-  try {
-    // const userId = req.decoded.userId;
-    const filters = req.query;
-    const users = await getUsers(filters);
+router.get(
+  "/",
+  // auth.authenticateAdmin,
+  async (req, res) => {
+    try {
+      // const userId = req.decoded.userId;
+      const filters = req.query;
+      const users = await getUsers(filters);
 
-    const usersWithPets = await Promise.all(
-      users.map(async (user) => {
-        const pets = await getUserPetsArr(user.id);
-        user.adoptedPets = pets;
-        return user;
-      })
-    );
+      const usersWithPets = await Promise.all(
+        users.map(async (user) => {
+          const pets = await getUserPetsArr(user.id);
+          user.adoptedPets = pets;
+          return user;
+        })
+      );
 
-    res.json(usersWithPets);
-  } catch (error) {
-    console.error("Error in GET / route:", error.message);
-    res.status(500).json({ error: "Internal server error" });
+      res.json(usersWithPets);
+    } catch (error) {
+      console.error("Error in GET / route:", error.message);
+      res.status(500).json({ error: "Internal server error" });
+    }
   }
-});
+);
 
 router.get("/me", auth.authenticate, async (req, res) => {
   try {
@@ -130,7 +133,16 @@ router.put(
   async (req, res) => {
     try {
       const editedUser = req.body;
-      //console.log("line 118", editedUser);
+      if (editedUser.new_password) {
+        const isPasswordMatch = await checkUserPassword(
+          editedUser.id,
+          editedUser.current_password
+        );
+        if (!isPasswordMatch) {
+          res.status(401).json({ error: "Incorrect password" });
+          return;
+        }
+      }
       const updatedUser = await editUser(editedUser);
       if (updatedUser) {
         res.status(200).json({
@@ -141,7 +153,7 @@ router.put(
         res.status(400).json({ error: "This user not found" });
       }
     } catch (error) {
-      console.error("line 128,Error in PUT / route:", error.message);
+      console.error("line 146,Error in PUT / route:", error.message);
       res.status(500).json({ error: "Internal server error" });
     }
   }
