@@ -14,6 +14,7 @@ router
  │    │    └── <anonymous>                         /                                                           POST
  │    │   
  │    ├── bound dispatch                           /                                                           GET
+ │    │    ├── authenticateAdmin                   /                                                           GET
  │    │    └── <anonymous>                         /                                                           GET
  │    │   
  │    ├── bound dispatch                           /me                                                         GET
@@ -21,6 +22,7 @@ router
  │    │    └── <anonymous>                         /                                                           GET
  │    │   
  │    ├── bound dispatch                           /:userId                                                    GET
+ │    │    ├── authenticate                        /                                                           GET
  │    │    └── <anonymous>                         /                                                           GET
  │    │   
  │    ├── bound dispatch                           /:id/full                                                   GET
@@ -33,7 +35,7 @@ router
  ├── router                                        /^\/pet\/?(?=\/|$)/                                         
  │   router                                                                                                    
  │    ├── bound dispatch                           /                                                           POST
- │    │    ├── authenticate                        /                                                           POST
+ │    │    ├── authenticateAdmin                   /                                                           POST
  │    │    └── <anonymous>                         /                                                           POST
  │    │   
  │    ├── bound dispatch                           /like                                                       POST
@@ -46,6 +48,7 @@ router
  │    │    └── <anonymous>                         /                                                           GET
  │    │   
  │    ├── bound dispatch                           /:petId                                                     PUT
+ │    │    ├── authenticateAdmin                   /                                                           PUT
  │    │    └── <anonymous>                         /                                                           PUT
  │    │   
  │    ├── bound dispatch                           /:id/return                                                 POST

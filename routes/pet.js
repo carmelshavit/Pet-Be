@@ -11,7 +11,7 @@ const {
   addLike,
   removeLike,
   returnPet,
-  adoptedPet,
+  adoptPet,
   getLikedPets,
 } = require("../db/pets.js");
 
@@ -31,16 +31,11 @@ const schema = S.object()
 router.post(
   "/",
   // validate(schema),
-  auth.authenticate,
+  auth.authenticateAdmin,
   (req, res) => {
     try {
       //console.log(req);
       const data = req.body;
-      if (req.decoded.isAdmin !== true) {
-        return res
-          .status(403)
-          .send({ message: "Permission denied. Must be an admin." });
-      }
 
       const queryResult = addPet(data);
 
@@ -98,27 +93,23 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.put(
-  "/:petId",
-  // auth.authenticateAdmin,
-  async (req, res) => {
-    try {
-      const petId = req.params.petId;
-      const editedPet = req.body;
-      const isUpdateSuccessful = await editPet(petId, editedPet); // Pass petId to the editPet function
-      if (isUpdateSuccessful) {
-        res
-          .status(200)
-          .json({ success: true, message: "Updated pet successfully" });
-      } else {
-        res.status(400).json({ error: "This pet not found" }); // Update error message
-      }
-    } catch (error) {
-      console.error("Error in PUT / route:", error.message);
-      res.status(500).json({ error: "Internal server error" });
+router.put("/:petId", auth.authenticateAdmin, async (req, res) => {
+  try {
+    const petId = req.params.petId;
+    const editedPet = req.body;
+    const isUpdateSuccessful = await editPet(petId, editedPet); // Pass petId to the editPet function
+    if (isUpdateSuccessful) {
+      res
+        .status(200)
+        .json({ success: true, message: "Updated pet successfully" });
+    } else {
+      res.status(400).json({ error: "This pet not found" }); // Update error message
     }
+  } catch (error) {
+    console.error("Error in PUT / route:", error.message);
+    res.status(500).json({ error: "Internal server error" });
   }
-);
+});
 
 router.post("/:id/return", auth.authenticate, async (req, res) => {
   const petId = req.params.id;
@@ -141,14 +132,14 @@ router.post("/:id/adopt", auth.authenticate, async (req, res) => {
   console.log("User ID:", userId);
 
   try {
-    const queryResult = await adoptedPet(id, userId); // Pass id directly to adoptedPet function
-    console.log("line 145", queryResult);
+    const adoptedPet = await adoptPet(id, userId); // Pass id directly to adoptedPet function
+    console.log("line 145", adoptedPet);
 
-    if (!queryResult || queryResult.affectedRows === 0) {
+    if (!adoptedPet) {
       return res.status(404).json({ error: "Adopting pet failed" });
     }
 
-    res.json({ id, userId });
+    res.json(adoptedPet);
   } catch (error) {
     console.error("Error adopting pet:", error);
     res.status(500).json({ error: "Internal server error" });

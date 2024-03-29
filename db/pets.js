@@ -1,5 +1,5 @@
 const { response } = require("express");
-const { getConnection } = require("../db/db");
+const { pool } = require("../db/db");
 const {
   addPetQuery,
   getPetsByAndQuery,
@@ -13,152 +13,91 @@ const {
 
 const getLikedPets = async (likedPetIds) => {
   console.log("line 15", likedPetIds);
-  try {
-    const connection = await getConnection();
-    const [queryResult] = await connection.query(
-      getLikedPetsQuery(likedPetIds)
-    );
-    return queryResult;
-  } catch (err) {
-    //console.log("Error from server:", err.message);
-    throw err;
-  }
+  const [queryResult] = await pool.query(getLikedPetsQuery(likedPetIds));
+  return queryResult;
 };
 const getPets = async (filters) => {
-  try {
-    const connection = await getConnection();
-    const [queryResult] = await connection.query(getPetsByAndQuery(filters));
-    return queryResult;
-  } catch (err) {
-    //console.log("Error from server:", err.message);
-    throw err;
-  }
+  const [queryResult] = await pool.query(getPetsByAndQuery(filters));
+  return queryResult;
 };
 
 const addPet = async (pet) => {
-  try {
-    const connection = await getConnection();
-    const [queryResult] = await connection.query(addPetQuery(), [pet]);
-    connection.release();
-    return queryResult;
-  } catch (error) {
-    throw error;
-  }
+  const [queryResult] = await pool.query(addPetQuery(), [pet]);
+  connection.release();
+  return queryResult;
 };
 
 const getLike = async () => {
   // //console.log(userId, petId);
-  try {
-    const connection = await getConnection();
-    const [queryResult] = await connection.query(
-      `SELECT * FROM petsdb.pet_status WHERE user_id = "${userId}" AND pet_id = "${petId}"`
-    );
-    connection.release();
-    return queryResult;
-  } catch (error) {
-    throw error;
-  }
+  const [queryResult] = await pool.query(
+    `SELECT * FROM petsdb.pet_status WHERE user_id = "${userId}" AND pet_id = "${petId}"`
+  );
+  return queryResult;
 };
 
 const addLike = async (userId, petId) => {
   //console.log(userId, petId);
-  try {
-    const connection = await getConnection();
-    const [queryResult] = await connection.query(addLikeQuery(userId, petId));
-    connection.release();
-    return queryResult;
-  } catch (error) {
-    throw error;
-  }
+  const [queryResult] = await pool.query(addLikeQuery(userId, petId));
+  return queryResult;
 };
 
 const removeLike = async (userId, petId) => {
   //console.log(petId);
-  try {
-    const connection = await getConnection();
-    const [queryResult] = await connection.query(
-      removeLikeQuery(userId, petId)
-    );
-    // connection.release();
-    return queryResult;
-  } catch (error) {
-    throw error;
-  }
+  const [queryResult] = await pool.query(removeLikeQuery(userId, petId));
+  // connection.release();
+  return queryResult;
 };
 
 const getPetById = async (id) => {
   //console.log("line 26", id);
-  try {
-    const connection = await getConnection();
-    const [rows] = await connection.query(getPetsByAndQuery({ id }));
+  const [rows] = await pool.query(getPetsByAndQuery({ id }));
 
-    if (rows.length === 0) {
-      return null;
-    }
-
-    const pet = rows[0]; // Assuming you only expect one result
-
-    //console.log("Final pet:", pet);
-    return pet;
-  } catch (err) {
-    //console.log("Error from server:", err.message);
-    throw err;
+  if (rows.length === 0) {
+    return null;
   }
+
+  const pet = rows[0]; // Assuming you only expect one result
+
+  //console.log("Final pet:", pet);
+  return pet;
 };
 
 const editPet = async (petId, editedPet) => {
   //console.log("Edited Pet:", editedPet);
-  try {
-    const connection = await getConnection();
-    const [rows] = await connection.query(editPetQuery(petId, editedPet));
-    if (rows.affectedRows === 0) {
-      return false;
-    } else {
-      return true;
-    }
-  } catch (err) {
-    //console.log("Error from server:", err.message);
-    throw err;
+  const [rows] = await pool.query(editPetQuery(petId, editedPet));
+  if (rows.affectedRows === 0) {
+    return false;
+  } else {
+    return true;
   }
 };
 const returnPet = async (petId, userId) => {
   //console.log("returnPet:", petId);
-  try {
-    const connection = await getConnection();
-    const [rows] = await connection.query(returnPetQuery(petId, userId));
-    //console.log("Rows:", rows);
-    if (rows.affectedRows === 0) {
-      return false;
-    } else {
-      return true;
-    }
-  } catch (err) {
-    //console.log("Error from server:", err.message);
-    throw err;
+  const [rows] = await pool.query(returnPetQuery(petId, userId));
+  //console.log("Rows:", rows);
+  if (rows.affectedRows === 0) {
+    return false;
+  } else {
+    return true;
   }
 };
-const adoptedPet = async (petId, userId) => {
+const adoptPet = async (petId, userId) => {
   console.log("Pet ID:", petId);
   console.log("Pet ID:", userId);
-  try {
-    const connection = await getConnection();
-    const [result] = await connection.query(adoptPetQuery(petId, userId));
-    //console.log("Result:", result);
-
-    // if (result.affectedRows === 0) {
-    //   return false; // Adoption failed
-    // } else {
-    //   return true; // Adoption successful
-    // }
-    return result;
-  } catch (err) {
-    console.error("Error from server:", err.message);
-    throw err; // Propagate the error
+  const [result] = await pool.query(adoptPetQuery(petId, userId));
+  if (result.affectedRows === 0) {
+    return null;
   }
+  const [rows] = await pool.query("SELECT * FROM petsdb.pets WHERE id = ?", [
+    petId,
+  ]);
+  console.log("line 90", rows[0]);
+
+  return rows[0];
 };
 
 module.exports = {
-  adoptedPet,
+  adoptPet,
   getLike,
   addLike,
   addPet,

@@ -109,15 +109,10 @@ const getPasswordUserQuery = (userId) => {
 };
 
 const editUserQuery = (editedUser) => {
-  // Hash the new password if provided
-  if (editedUser.new_password) {
-    const newPasswordHash = bcrypt.hash(editedUser.new_password, 10);
-    editedUser.password = newPasswordHash;
-  }
-
   // Construct the set clauses for updating user data
   const setClauses = [];
   if (editedUser.new_password) {
+    // password must be hashed
     setClauses.push(`password = '${editedUser.new_password}'`);
   }
   if (editedUser.email) {

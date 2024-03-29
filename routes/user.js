@@ -4,8 +4,6 @@ const express = require("express");
 const router = express.Router();
 const auth = require("../authentication/authentication.js");
 var jwt = require("jsonwebtoken");
-// import Cookies from "react-cookie";
-// const cookies = new Cookies();
 
 const {
   login,
@@ -25,18 +23,16 @@ router.post("/login", async (req, res) => {
       res.status(401).json({ error: "User not found" });
       return;
     }
-    const isThisUserAnAdmin = user.is_admin === 1;
+    // const isThisUserAnAdmin = user.is_admin === 1;
+    // user.is_admin = isThisUserAnAdmin;
     const token = auth.sign({
       userId: user.id,
-      isAdmin: isThisUserAnAdmin,
+      is_admin: user.is_admin,
     });
-    const copy = { ...user };
-    delete copy.password;
+    delete user.password;
+    // res.cookie("access_token", token, { expire: new Date() + 9999 });
     res.json({
-      user: {
-        ...copy,
-        isAdmin: isThisUserAnAdmin,
-      },
+      user,
       token,
     });
   } catch (error) {
@@ -65,51 +61,49 @@ router.post("/signup", validate(schema), async (req, res) => {
   }
 });
 
-router.get(
-  "/",
-  // auth.authenticateAdmin,
-  async (req, res) => {
-    try {
-      // const userId = req.decoded.userId;
-      const filters = req.query;
-      const users = await getUsers(filters);
+router.get("/", auth.authenticateAdmin, async (req, res) => {
+  try {
+    // const userId = req.decoded.userId;
+    const filters = req.query;
+    const users = await getUsers(filters);
 
-      const usersWithPets = await Promise.all(
-        users.map(async (user) => {
-          const pets = await getUserPetsArr(user.id);
-          user.adoptedPets = pets;
-          return user;
-        })
-      );
+    const usersWithPets = await Promise.all(
+      users.map(async (user) => {
+        const pets = await getUserPetsArr(user.id);
+        user.adoptedPets = pets;
+        return user;
+      })
+    );
 
-      res.json(usersWithPets);
-    } catch (error) {
-      console.error("Error in GET / route:", error.message);
-      res.status(500).json({ error: "Internal server error" });
-    }
+    res.json(usersWithPets);
+  } catch (error) {
+    console.error("Error in GET / route:", error.message);
+    res.status(500).json({ error: "Internal server error" });
   }
-);
+});
 
 router.get("/me", auth.authenticate, async (req, res) => {
   try {
     const userId = req.decoded.userId;
     const user = await getUserById(userId);
     //console.log("line 37", user);
-
     if (user === null) {
+      console.log("in null");
       res.status(404).json({ error: "User not found" });
       // Handle the case where the user is not found
     } else {
       // Process the user data or return it as needed
+      console.log("should return user");
       res.json(user);
     }
   } catch (error) {
+    console.log("in error " + error.message);
     console.error("Error in GET /:userId route:", error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-router.get("/:userId", async (req, res) => {
+router.get("/:userId", auth.authenticate, async (req, res) => {
   try {
     const userId = req.params.userId;
     const getuserId = await getUserById(userId);

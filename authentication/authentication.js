@@ -20,11 +20,12 @@ function authenticate(req, res, next) {
 
   jwt.verify(token, process.env.SECRET, (err, decoded) => {
     if (err) {
-      res.statusCode(401).send({ message: "Must authenticate" });
+      res.status(401).send({ message: "Must authenticate" });
       return;
     }
     // decoded - {id: USER_ID, isAdmin: true/false}. See 'login' endpoint
     req.decoded = decoded;
+    console.log(req);
     next();
   });
 }
@@ -34,16 +35,14 @@ function authenticateAdmin(req, res, next) {
 
   jwt.verify(token, process.env.SECRET, (err, decoded) => {
     if (err) {
-      res.statusCode(401).send({ message: "Must authenticate" });
+      res.status(401).send({ message: "Must authenticate" });
       return;
     }
-    if (req.decoded.isAdmin !== true) {
-      res
-        .statusCode(403)
-        .send({ message: "Permission denied. Must be an admin." });
+    if (!decoded || decoded.is_admin !== 1) {
+      res.status(403).send({ message: "Permission denied. Must be an admin." });
       return;
     }
-    // decoded - {id: USER_ID, isAdmin: true/false}. See 'login' endpoint
+    // Set req.decoded to the decoded payload
     req.decoded = decoded;
     next();
   });
