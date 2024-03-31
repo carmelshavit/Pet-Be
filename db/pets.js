@@ -8,6 +8,7 @@ const {
   removeLikeQuery,
   returnPetQuery,
   getLikedPetsQuery,
+  getLikesQuery,
   adoptPetQuery,
 } = require("../db/queries");
 
@@ -29,9 +30,7 @@ const addPet = async (pet) => {
 
 const getLike = async () => {
   // //console.log(userId, petId);
-  const [queryResult] = await pool.query(
-    `SELECT * FROM petsdb.pet_status WHERE user_id = "${userId}" AND pet_id = "${petId}"`
-  );
+  const [queryResult] = await pool.query(getLikesQuery(userId));
   return queryResult;
 };
 

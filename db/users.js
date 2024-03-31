@@ -51,8 +51,6 @@ const login = async (email, password) => {
 
 const getUserById = async (userId) => {
   {
-    console.log("before connection");
-    // const connection = await getConnection();
     const [rows] = await pool.query(getUserByIdQuery(userId));
     if (rows.length === 0) {
       return null;
@@ -67,7 +65,6 @@ const getUserById = async (userId) => {
 };
 
 const getUserPetsArr = async (userId) => {
-  // const connection = await getConnection();
   const [petRows] = await pool.query(
     `
     SELECT *
@@ -81,8 +78,6 @@ const getUserPetsArr = async (userId) => {
 };
 
 const getLikesArr = async (userId) => {
-  // const connection = await getConnection();
-
   const [petRows] = await pool.query(
     `SELECT petId FROM pet_status WHERE userId = ?`,
     [userId]
@@ -110,7 +105,6 @@ const checkUserPassword = async (userId, userPassword) => {
 };
 
 const editUser = async (editedUser) => {
-  // Hash the new password if provided
   if (editedUser.new_password) {
     const newPasswordHash = await bcrypt.hash(editedUser.new_password, 10);
     editedUser.password = newPasswordHash;

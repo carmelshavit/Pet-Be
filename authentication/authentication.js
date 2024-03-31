@@ -38,7 +38,7 @@ function authenticateAdmin(req, res, next) {
       res.status(401).send({ message: "Must authenticate" });
       return;
     }
-    if (!decoded || decoded.is_admin !== 1) {
+    if (!decoded || !decoded.is_admin) {
       res.status(403).send({ message: "Permission denied. Must be an admin." });
       return;
     }

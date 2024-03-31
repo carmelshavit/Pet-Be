@@ -35,6 +35,7 @@ router
  ├── router                                        /^\/pet\/?(?=\/|$)/                                         
  │   router                                                                                                    
  │    ├── bound dispatch                           /                                                           POST
+ │    │    ├── <anonymous>                         /                                                           POST
  │    │    ├── authenticateAdmin                   /                                                           POST
  │    │    └── <anonymous>                         /                                                           POST
  │    │   

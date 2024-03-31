@@ -15,6 +15,11 @@ const {
   checkUserPassword,
 } = require("../db/users.js");
 
+const transformAdmin = (user) => {
+  const isThisUserAnAdmin = user.is_admin === 1;
+  user.is_admin = isThisUserAnAdmin;
+};
+
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -23,12 +28,12 @@ router.post("/login", async (req, res) => {
       res.status(401).json({ error: "User not found" });
       return;
     }
-    // const isThisUserAnAdmin = user.is_admin === 1;
-    // user.is_admin = isThisUserAnAdmin;
+    transformAdmin(user);
     const token = auth.sign({
       userId: user.id,
       is_admin: user.is_admin,
     });
+    console.log(user);
     delete user.password;
     // res.cookie("access_token", token, { expire: new Date() + 9999 });
     res.json({
@@ -86,6 +91,7 @@ router.get("/me", auth.authenticate, async (req, res) => {
   try {
     const userId = req.decoded.userId;
     const user = await getUserById(userId);
+    transformAdmin(user);
     //console.log("line 37", user);
     if (user === null) {
       console.log("in null");

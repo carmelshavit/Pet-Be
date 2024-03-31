@@ -28,29 +28,24 @@ const schema = S.object()
   .prop("imgFile", S.string().required())
   .valueOf();
 
-router.post(
-  "/",
-  // validate(schema),
-  auth.authenticateAdmin,
-  (req, res) => {
-    try {
-      //console.log(req);
-      const data = req.body;
+router.post("/", validate(schema), auth.authenticateAdmin, (req, res) => {
+  try {
+    //console.log(req);
+    const data = req.body;
 
-      const queryResult = addPet(data);
+    const queryResult = addPet(data);
 
-      if (!queryResult || queryResult.affectedRows === 0) {
-        return res.status(404).json({ error: "Add pet failed" });
-      }
-      return res
-        .status(200)
-        .json({ success: true, message: "Successfully add pet" });
-    } catch (error) {
-      console.error("Error writing to file:", error);
-      return res.status(500).json({ error: "Error writing to file" });
+    if (!queryResult || queryResult.affectedRows === 0) {
+      return res.status(404).json({ error: "Add pet failed" });
     }
+    return res
+      .status(200)
+      .json({ success: true, message: "Successfully add pet" });
+  } catch (error) {
+    console.error("Error writing to file:", error);
+    return res.status(500).json({ error: "Error writing to file" });
   }
-);
+});
 
 router.post("/like", async (req, res) => {
   // console.log("line 61", req);

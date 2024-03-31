@@ -1,10 +1,17 @@
 const bcrypt = require("bcrypt");
 
 const findEmailUser = (email) => {
-  return `SELECT * FROM petsdb.users WHERE email = '${email}'`;
+  return {
+    sql: `SELECT * FROM petsdb.users WHERE email = ?`,
+    values: [email],
+  };
 };
+
 const getUserByIdQuery = (userId) => {
-  return `SELECT * FROM petsdb.users WHERE id = '${userId}'`;
+  return {
+    sql: `SELECT * FROM petsdb.users WHERE id = ?`,
+    values: [userId],
+  };
 };
 
 const getUsersQuery = (filters) => {
@@ -17,7 +24,7 @@ const getUsersQuery = (filters) => {
     filterFields.forEach((fieldName) => {
       const value = filters[fieldName];
       if (value !== undefined && value !== "") {
-        conditions.push(`${fieldName} = ${formatSqlQueryValue(value)}`);
+        conditions.push(`${fieldName} = ?`);
       }
     });
 
@@ -25,19 +32,27 @@ const getUsersQuery = (filters) => {
       query = query + " WHERE " + conditions.join(" AND ");
     }
 
-    //console.log("Constructed SQL query:", query);
-    return query;
+    return {
+      sql: query,
+      values: Object.values(filters).filter((value) => value !== ""),
+    };
   } catch (err) {
-    //console.log("Error from server:", err.message);
     throw err;
   }
 };
 
 const addUserQuery = () => {
-  return `INSERT INTO petsdb.users SET ?`;
+  return {
+    sql: `INSERT INTO petsdb.users SET ?`,
+    values: [],
+  };
 };
+
 const addPetQuery = () => {
-  return `INSERT INTO petsdb.pets SET ?`;
+  return {
+    sql: `INSERT INTO petsdb.pets SET ?`,
+    values: [],
+  };
 };
 
 const formatSqlQueryValue = (value) => {
@@ -47,14 +62,17 @@ const formatSqlQueryValue = (value) => {
     case "true":
       return 1;
     default:
-      return `"${value}"`;
+      return value;
   }
 };
+
 const getPetsByAndQuery = (filters) => {
-  //console.log(filters);
   let query = "SELECT * from petsdb.pets";
   if (!filters) {
-    return query;
+    return {
+      sql: query,
+      values: [],
+    };
   }
   let conditions = [];
 
@@ -72,67 +90,65 @@ const getPetsByAndQuery = (filters) => {
   filterFields.forEach((fieldName) => {
     const value = filters[fieldName];
     if (value !== undefined && value !== "") {
-      // if (typeof value === "object" && value.length > 0) {
-      //   const sqlArr = value
-      //     .map((item) => {
-      //       return formatSqlQueryValue(item);
-      //     })
-      //     .join(",");
-      //   conditions.push(`${fieldName} IN (${sqlArr})`);
-      // } else {
-      conditions.push(`${fieldName} = ${formatSqlQueryValue(value)}`);
+      conditions.push(`${fieldName} = ?`);
     }
     if (filters.minHeight) {
-      conditions.push(`height >= ${filters.minHeight}`);
+      conditions.push(`height >= ?`);
     }
-
     if (filters.maxHeight) {
-      conditions.push(`height <= ${filters.maxHeight}`);
+      conditions.push(`height <= ?`);
     }
     if (filters.minWeight) {
-      conditions.push(`height >= ${filters.minWeight}`);
+      conditions.push(`height >= ?`);
     }
-
     if (filters.maxWeight) {
-      conditions.push(`height <= ${filters.maxWeight}`);
+      conditions.push(`height <= ?`);
     }
   });
+
   if (conditions.length > 0) {
     query = query + " WHERE " + conditions.join(" AND ");
   }
-  //console.log(query);
-  return query;
+
+  return {
+    sql: query,
+    values: Object.values(filters).filter((value) => value !== ""),
+  };
 };
 
 const getPasswordUserQuery = (userId) => {
-  return `SELECT password FROM petsdb.users WHERE id = '${userId}'`;
+  return {
+    sql: `SELECT password FROM petsdb.users WHERE id = ?`,
+    values: [userId],
+  };
 };
 
 const editUserQuery = (editedUser) => {
-  // Construct the set clauses for updating user data
   const setClauses = [];
   if (editedUser.new_password) {
-    // password must be hashed
-    setClauses.push(`password = '${editedUser.new_password}'`);
+    setClauses.push(`password = ?`);
   }
   if (editedUser.email) {
-    setClauses.push(`email = '${editedUser.email}'`);
+    setClauses.push(`email = ?`);
   }
   if (editedUser.first_name) {
-    setClauses.push(`first_name = '${editedUser.first_name}'`);
+    setClauses.push(`first_name = ?`);
   }
   if (editedUser.last_name) {
-    setClauses.push(`last_name = '${editedUser.last_name}'`);
+    setClauses.push(`last_name = ?`);
   }
   if (editedUser.phone_number) {
-    setClauses.push(`phone_number = '${editedUser.phone_number}'`);
+    setClauses.push(`phone_number = ?`);
   }
-  // Add other fields as needed
-
-  // Check if there are any fields to update and the user ID is provided
   if (setClauses.length !== 0 && editedUser.id) {
     const setClause = setClauses.join(", ");
-    return `UPDATE users SET ${setClause} WHERE id = '${editedUser.id}';`;
+    return {
+      sql: `UPDATE users SET ${setClause} WHERE id = ?`,
+      values: [
+        ...Object.values(editedUser).filter((value) => value !== ""),
+        editedUser.id,
+      ],
+    };
   } else {
     throw "Validation error: Set clauses or user ID is missing.";
   }
@@ -140,74 +156,80 @@ const editUserQuery = (editedUser) => {
 
 const editPetQuery = (petId, editedPet) => {
   const setClauses = [];
-
   if (editedPet.name) {
-    setClauses.push(`name = '${editedPet.name}'`);
+    setClauses.push(`name = ?`);
   }
   if (editedPet.adoption_status) {
-    setClauses.push(`adoption_status = '${editedPet.adoption_status}'`);
+    setClauses.push(`adoption_status = ?`);
   }
   if (editedPet.type) {
-    setClauses.push(`type = '${editedPet.type}'`);
+    setClauses.push(`type = ?`);
   }
   if (editedPet.height) {
-    setClauses.push(`height = ${editedPet.height}`);
+    setClauses.push(`height = ?`);
   }
   if (editedPet.weight) {
-    setClauses.push(`weight = ${editedPet.weight}`);
+    setClauses.push(`weight = ?`);
   }
   if (editedPet.color) {
-    setClauses.push(`color = '${editedPet.color}'`);
+    setClauses.push(`color = ?`);
   }
   if (editedPet.bio) {
-    setClauses.push(`bio = '${editedPet.bio}'`);
+    setClauses.push(`bio = ?`);
   }
   if (editedPet.hypoallergenic !== undefined) {
-    setClauses.push(`hypoallergenic = ${editedPet.hypoallergenic}`);
+    setClauses.push(`hypoallergenic = ?`);
   }
   if (editedPet.dietary_restrictions) {
-    setClauses.push(
-      `dietary_restrictions = '${editedPet.dietary_restrictions}'`
-    );
+    setClauses.push(`dietary_restrictions = ?`);
   }
   if (editedPet.breed) {
-    setClauses.push(`breed = '${editedPet.breed}'`);
+    setClauses.push(`breed = ?`);
   }
   if (editedPet.imgFile) {
-    setClauses.push(`imgFile = '${editedPet.imgFile}'`);
+    setClauses.push(`imgFile = ?`);
   }
-
   if (setClauses.length !== 0 && petId) {
     const setClause = setClauses.join(", ");
-    return `UPDATE pets SET ${setClause} WHERE id = ${petId};`;
+    return {
+      sql: `UPDATE pets SET ${setClause} WHERE id = ?`,
+      values: [
+        ...Object.values(editedPet).filter((value) => value !== ""),
+        petId,
+      ],
+    };
   } else {
     return "Validation error: Set clauses or pet ID is missing.";
   }
 };
+
 const addLikeQuery = (userId, petId) => {
-  return `INSERT INTO petsdb.pet_status (userId, petId) VALUES("${userId}", "${petId}")`;
-};
-const getLikedPetsQuery = (likedPetIds) => {
-  // Constructing the SQL query string with parameterized query
-  return `SELECT * FROM petsdb.pets WHERE id IN (${likedPetIds})`;
+  return {
+    sql: `INSERT INTO petsdb.pet_status (userId, petId) VALUES(?, ?)`,
+    values: [userId, petId],
+  };
 };
 
-const getLikesQuery = (userId) => {
-  return `SELECT * FROM petsdb.pet_status WHERE userId = '${userId}'`;
+const getLikedPetsQuery = (likedPetIds) => {
+  return {
+    sql: `SELECT * FROM petsdb.pets WHERE id IN (?)`,
+    values: [likedPetIds],
+  };
 };
+
+const getLikesQuery = (userId, petId) => {
+  return {
+    sql: `SELECT * FROM petsdb.pet_status WHERE user_id = ? AND pet_id = ?`,
+    values: [userId, petId],
+  };
+};
+
 const returnPetQuery = (petId, userId) => {
   return {
     sql: `UPDATE petsdb.pets SET adoptedBy=NULL WHERE id = ? AND adoptedBy = ?`,
     values: [petId, userId],
   };
 };
-
-// const adoptPetQuery = (userId, petId) => {
-//   return {
-//     sql: `SELECT * FROM petsdb.pets p INNER JOIN users u ON p.adoptedBy = u.id WHERE u.id = ${1} AND p.id =${2}`,
-//     values: [userId, petId],
-//   };
-// };
 
 const adoptPetQuery = (petId, userId) => {
   return {
