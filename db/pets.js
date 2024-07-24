@@ -24,7 +24,6 @@ const getPets = async (filters) => {
 
 const addPet = async (pet) => {
   const [queryResult] = await pool.query(addPetQuery(), [pet]);
-  connection.release();
   return queryResult;
 };
 
@@ -63,7 +62,8 @@ const getPetById = async (id) => {
 
 const editPet = async (petId, editedPet) => {
   //console.log("Edited Pet:", editedPet);
-  const [rows] = await pool.query(editPetQuery(petId, editedPet));
+  const sqlQuery = editPetQuery(petId, editedPet);
+  const [rows] = await pool.query(sqlQuery);
   if (rows.affectedRows === 0) {
     return false;
   } else {

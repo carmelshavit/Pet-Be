@@ -29,6 +29,7 @@ router
  │    │    └── <anonymous>                         /                                                           GET
  │    │   
  │    └── bound dispatch                           /:userId                                                    PUT
+ │         ├── authenticate                        /                                                           PUT
  │         └── <anonymous>                         /                                                           PUT
  │        
  │   

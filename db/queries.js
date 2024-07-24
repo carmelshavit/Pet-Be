@@ -55,19 +55,9 @@ const addPetQuery = () => {
   };
 };
 
-const formatSqlQueryValue = (value) => {
-  switch (value) {
-    case "false":
-      return 0;
-    case "true":
-      return 1;
-    default:
-      return value;
-  }
-};
-
 const getPetsByAndQuery = (filters) => {
   let query = "SELECT * from petsdb.pets";
+  let values = []; // Initialize values array
   if (!filters) {
     return {
       sql: query,
@@ -81,7 +71,6 @@ const getPetsByAndQuery = (filters) => {
     "id",
     "name",
     "type",
-    "hypoallergenic",
     "dietary_restriction",
     "color",
     "imgFile",
@@ -91,28 +80,46 @@ const getPetsByAndQuery = (filters) => {
     const value = filters[fieldName];
     if (value !== undefined && value !== "") {
       conditions.push(`${fieldName} = ?`);
-    }
-    if (filters.minHeight) {
-      conditions.push(`height >= ?`);
-    }
-    if (filters.maxHeight) {
-      conditions.push(`height <= ?`);
-    }
-    if (filters.minWeight) {
-      conditions.push(`height >= ?`);
-    }
-    if (filters.maxWeight) {
-      conditions.push(`height <= ?`);
+      values.push(value); // Push value to values array
     }
   });
+
+  if (filters.hypoallergenic) {
+    const hypoallergenicValue = filters.hypoallergenic === "true" ? 1 : 0;
+    conditions.push(`hypoallergenic=?`);
+    values.push(hypoallergenicValue); // Push converted value to values array
+  }
+
+  if (filters.minHeight) {
+    conditions.push(`height >= ?`);
+    values.push(filters.minHeight); // Push minHeight value to values array
+  }
+  if (filters.maxHeight) {
+    conditions.push(`height <= ?`);
+    values.push(filters.maxHeight); // Push maxHeight value to values array
+  }
+  if (filters.minWeight) {
+    conditions.push(`weight >= ?`);
+    values.push(filters.minWeight); // Push minWeight value to values array
+  }
+  if (filters.maxWeight) {
+    conditions.push(`weight <= ?`);
+    values.push(filters.maxWeight); // Push maxWeight value to values array
+  }
 
   if (conditions.length > 0) {
     query = query + " WHERE " + conditions.join(" AND ");
   }
 
+  if (filters.perPage && filters.pageNum) {
+    const offset = (filters.pageNum - 1) * filters.perPage;
+    query = query + ` LIMIT ${filters.perPage} OFFSET ${offset}`;
+  }
+
+  console.log({ values });
   return {
     sql: query,
-    values: Object.values(filters).filter((value) => value !== ""),
+    values: values, // Return the values array
   };
 };
 
@@ -125,29 +132,33 @@ const getPasswordUserQuery = (userId) => {
 
 const editUserQuery = (editedUser) => {
   const setClauses = [];
+  const setFieldNames = [];
+
   if (editedUser.new_password) {
     setClauses.push(`password = ?`);
+    setFieldNames.push(editedUser.new_password);
   }
   if (editedUser.email) {
     setClauses.push(`email = ?`);
+    setFieldNames.push(editedUser.email);
   }
   if (editedUser.first_name) {
     setClauses.push(`first_name = ?`);
+    setFieldNames.push(editedUser.first_name);
   }
   if (editedUser.last_name) {
     setClauses.push(`last_name = ?`);
+    setFieldNames.push(editedUser.last_name);
   }
   if (editedUser.phone_number) {
     setClauses.push(`phone_number = ?`);
+    setFieldNames.push(editedUser.phone_number);
   }
   if (setClauses.length !== 0 && editedUser.id) {
     const setClause = setClauses.join(", ");
     return {
       sql: `UPDATE users SET ${setClause} WHERE id = ?`,
-      values: [
-        ...Object.values(editedUser).filter((value) => value !== ""),
-        editedUser.id,
-      ],
+      values: [...setFieldNames, editedUser.id],
     };
   } else {
     throw "Validation error: Set clauses or user ID is missing.";
@@ -156,47 +167,57 @@ const editUserQuery = (editedUser) => {
 
 const editPetQuery = (petId, editedPet) => {
   const setClauses = [];
+  const setFieldNames = [];
+
   if (editedPet.name) {
     setClauses.push(`name = ?`);
+    setFieldNames.push(editedPet.name);
   }
   if (editedPet.adoption_status) {
     setClauses.push(`adoption_status = ?`);
+    setFieldNames.push(editedPet.adoption_status);
   }
   if (editedPet.type) {
     setClauses.push(`type = ?`);
+    setFieldNames.push(editedPet.type);
   }
   if (editedPet.height) {
     setClauses.push(`height = ?`);
+    setFieldNames.push(editedPet.height);
   }
   if (editedPet.weight) {
     setClauses.push(`weight = ?`);
+    setFieldNames.push(editedPet.weight);
   }
   if (editedPet.color) {
     setClauses.push(`color = ?`);
+    setFieldNames.push(editedPet.color);
   }
   if (editedPet.bio) {
     setClauses.push(`bio = ?`);
+    setFieldNames.push(editedPet.bio);
   }
   if (editedPet.hypoallergenic !== undefined) {
     setClauses.push(`hypoallergenic = ?`);
+    setFieldNames.push(editedPet.hypoallergenic);
   }
   if (editedPet.dietary_restrictions) {
     setClauses.push(`dietary_restrictions = ?`);
+    setFieldNames.push(editedPet.dietary_restrictions);
   }
   if (editedPet.breed) {
     setClauses.push(`breed = ?`);
+    setFieldNames.push(editedPet.breed);
   }
   if (editedPet.imgFile) {
     setClauses.push(`imgFile = ?`);
+    setFieldNames.push(editedPet.imgFile);
   }
   if (setClauses.length !== 0 && petId) {
     const setClause = setClauses.join(", ");
     return {
       sql: `UPDATE pets SET ${setClause} WHERE id = ?`,
-      values: [
-        ...Object.values(editedPet).filter((value) => value !== ""),
-        petId,
-      ],
+      values: [...setFieldNames, petId],
     };
   } else {
     return "Validation error: Set clauses or pet ID is missing.";

@@ -68,7 +68,7 @@ router.get("/", async (req, res) => {
     const petsData = await getPets(filters); // Pass the filters to the function
     res.json(petsData); // Send the pet data as the response
   } catch (error) {
-    console.error("line 77, Error in GET / route:", error.message);
+    console.error("line 77, Error in GET / route:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });

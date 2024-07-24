@@ -127,36 +127,32 @@ router.get("/:userId", auth.authenticate, async (req, res) => {
 
 router.get("/:id/full", async (req, res) => {});
 
-router.put(
-  "/:userId",
-  //  auth.authenticate,
-  async (req, res) => {
-    try {
-      const editedUser = req.body;
-      if (editedUser.new_password) {
-        const isPasswordMatch = await checkUserPassword(
-          editedUser.id,
-          editedUser.current_password
-        );
-        if (!isPasswordMatch) {
-          res.status(401).json({ error: "Incorrect password" });
-          return;
-        }
+router.put("/:userId", auth.authenticate, async (req, res) => {
+  try {
+    const editedUser = req.body;
+    if (editedUser.new_password) {
+      const isPasswordMatch = await checkUserPassword(
+        editedUser.id,
+        editedUser.current_password
+      );
+      if (!isPasswordMatch) {
+        res.status(401).json({ error: "Incorrect password" });
+        return;
       }
-      const updatedUser = await editUser(editedUser);
-      if (updatedUser) {
-        res.status(200).json({
-          success: true,
-          message: "Updated user successfully",
-        });
-      } else {
-        res.status(400).json({ error: "This user not found" });
-      }
-    } catch (error) {
-      console.error("line 146,Error in PUT / route:", error.message);
-      res.status(500).json({ error: "Internal server error" });
     }
+    const updatedUser = await editUser(editedUser);
+    if (updatedUser) {
+      res.status(200).json({
+        success: true,
+        message: "Updated user successfully",
+      });
+    } else {
+      res.status(400).json({ error: "This user not found" });
+    }
+  } catch (error) {
+    console.error("line 146,Error in PUT / route:", error.message);
+    res.status(500).json({ error: "Internal server error" });
   }
-);
+});
 
 module.exports = router;
