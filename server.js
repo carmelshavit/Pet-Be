@@ -1,38 +1,46 @@
-const express = require("express");
+/** @format */
+
+const express = require('express');
 const app = express();
-const cors = require("cors");
-const allUsersFunctions = require("./routes/user");
-const pets = require("./routes/pet");
-const cookieParser = require("cookie-parser");
+const cors = require('cors');
+const allUsersFunctions = require('./routes/user');
+const pets = require('./routes/pet');
+const cookieParser = require('cookie-parser');
+const path = require('path');
+
+if (process.env.NODE_ENV === 'production') {
+	app.use(express.static(path.resolve('Public')));
+} else {
+	app.use(
+		cors({
+			origin: 'http://localhost:5173',
+			methods: ['GET', 'POST', 'PUT', 'DELETE'],
+			credentials: true,
+		})
+	);
+}
 
 const {
-  getConnection,
-  // ,migrate
-} = require("./db/db");
+	getConnection,
+	// ,migrate
+} = require('./db/db');
 
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  })
-);
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("/user", allUsersFunctions);
-app.use("/pet", pets);
+app.use('/user', allUsersFunctions);
+app.use('/pet', pets);
 
 const port = 3001;
 
-app.get("/", async (req, res) => {
-  await getConnection();
-  res.send("Pets application");
+app.get('/', async (req, res) => {
+	await getConnection();
+	res.send('Pets application');
 });
 
-require("express-print-routes")(app, "routes.txt");
+require('express-print-routes')(app, 'routes.txt');
 
 // migrate();
 app.listen(port, () => {
-  //console.log(`Example app listening at http://localhost:${port}`);
+	console.log(`Example app listening at http://localhost:${port}`);
 });
