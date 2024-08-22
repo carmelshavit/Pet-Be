@@ -13,7 +13,7 @@ const pool = mysql.createPool({
 const getConnection = async () => {
 	// const connection = await pool.getConnection();
 	const connection = mysql.createConnection({
-		host: 'postgresql://petsdb_kq7t_user:nXSL35X9ny5RO9FaEM9yiPBMsv7IwQG9@dpg-cr3hrj3v2p9s73dtfndg-a/petsdb_kq7t',
+		host: 'postgresql://petsdb_kq7t_user:nXSL35X9ny5RO9FaEM9yiPBMsv7IwQG9@dpg-cr3hrj3v2p9s73dtfndg-a.frankfurt-postgres.render.com/petsdb_kq7t',
 		user: 'petsdb_kq7t_user',
 		password: 'nXSL35X9ny5RO9FaEM9yiPBMsv7IwQG9',
 		database: 'petsdb_kq7t',
