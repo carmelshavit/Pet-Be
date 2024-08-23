@@ -7,7 +7,6 @@ const allUsersFunctions = require('./routes/user');
 const pets = require('./routes/pet');
 const cookieParser = require('cookie-parser');
 const path = require('path');
-const sequelize = require('./db/db'); // Import the sequelize instance
 
 if (process.env.NODE_ENV === 'production') {
 	app.use(express.static(path.resolve('Public')));
@@ -35,12 +34,8 @@ app.use('/pet', pets);
 const port = 3001;
 
 app.get('/', async (req, res) => {
-	try {
-		await sequelize.authenticate(); // Test the connection when the root route is hit
-		res.send('Pets application connected to database');
-	} catch (err) {
-		res.status(500).send('Failed to connect to database');
-	}
+	await getConnection();
+	res.send('Pets application');
 });
 
 require('express-print-routes')(app, 'routes.txt');
