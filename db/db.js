@@ -15,7 +15,7 @@ const getConnection = async () => {
 	const connection = mysql.createConnection({
 		host: 'mysql-de37a9-carmel-784c.h.aivencloud.com',
 		user: 'avnadmin',
-		password: 'AVNS_Kq_FL87wcVCZw42bSLA',
+		password: process.env.SQL_PASSWORD,
 		database: 'defaultdb',
 		port: 10147,
 	});
