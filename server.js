@@ -51,6 +51,10 @@ const executeSchema = async () => {
 // Execute the schema on server start
 executeSchema();
 
+app.get('/', async (req, res) => {
+	res.send('Pets application');
+});
+
 require('express-print-routes')(app, 'routes.txt');
 
 // Start the server
