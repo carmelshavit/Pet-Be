@@ -7,7 +7,8 @@ const allUsersFunctions = require('./routes/user');
 const pets = require('./routes/pet');
 const cookieParser = require('cookie-parser');
 const path = require('path');
-const sequelize = require('./db/db'); // Import the sequelize instance
+const fs = require('fs');
+const { getConnection } = require('./db/db');
 
 if (process.env.NODE_ENV === 'production') {
 	app.use(express.static(path.resolve('Public')));
@@ -21,11 +22,6 @@ if (process.env.NODE_ENV === 'production') {
 	);
 }
 
-const {
-	getConnection,
-	// ,migrate
-} = require('./db/db');
-
 app.use(express.json());
 app.use(cookieParser());
 
@@ -34,18 +30,36 @@ app.use('/pet', pets);
 
 const port = 3001;
 
-app.get('/', async (req, res) => {
+// Function to execute the SQL schema
+const executeSchema = async () => {
 	try {
-		await sequelize.authenticate(); // Test the connection when the root route is hit
-		res.send('Pets application connected to database');
-	} catch (err) {
-		res.status(500).send('Failed to connect to database');
+		// Read the SQL file
+		const sql = fs.readFileSync('migration/schema.sql', 'utf8');
+
+		// Get MySQL connection
+		const connection = await getConnection();
+
+		// Execute the SQL queries
+		await connection.query(sql);
+
+		// Close the connection
+		console.log('Schema executed successfully.');
+	} catch (error) {
+		console.error('Error reading or executing schema.sql:', error);
 	}
+};
+
+// Execute the schema on server start
+executeSchema();
+
+app.get('/', async (req, res) => {
+	await getConnection();
+	res.send('Pets application');
 });
 
 require('express-print-routes')(app, 'routes.txt');
 
-// migrate();
+// Start the server
 app.listen(port, () => {
 	console.log(`Example app listening at http://localhost:${port}`);
 });
