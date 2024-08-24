@@ -11,7 +11,7 @@ const fs = require('fs');
 const { getConnection } = require('./db/db');
 
 if (process.env.NODE_ENV === 'production') {
-	app.use(express.static(path.resolve('Public')));
+	app.use(express.static(path.resolve('public')));
 } else {
 	app.use(
 		cors({
