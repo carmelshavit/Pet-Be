@@ -1,6 +1,6 @@
 /** @format */
 
-const mysql = require('mysql2/promise');
+// const mysql = require('mysql2/promise');
 
 const getConnection = async () => {
 	const connection = mysql.createConnection({
