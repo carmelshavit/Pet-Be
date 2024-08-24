@@ -33,7 +33,6 @@ const port = 3001;
 // Function to execute the SQL schema
 const executeSchema = async () => {
 	try {
-		// Read the SQL file
 		const sql = fs.readFileSync('migration/schema.sql', 'utf8');
 
 		// Get MySQL connection
@@ -52,14 +51,10 @@ const executeSchema = async () => {
 // Execute the schema on server start
 executeSchema();
 
-app.get('/', async (req, res) => {
-	await getConnection();
-	res.send('Pets application');
-});
-
 require('express-print-routes')(app, 'routes.txt');
 
 // Start the server
-app.listen(port, () => {
+app.listen(port, async () => {
+	await getConnection();
 	console.log(`Example app listening at http://localhost:${port}`);
 });
