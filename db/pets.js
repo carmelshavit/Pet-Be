@@ -12,7 +12,7 @@ const {
 	getLikedPetsQuery,
 	getLikesQuery,
 	adoptPetQuery,
-} = require('../db/queries_pg');
+} = require('../db/queries');
 
 const getLikedPets = async (likedPetIds) => {
 	console.log('line 15', likedPetIds);

@@ -1,9 +1,0 @@
-CREATE TABLE IF NOT EXISTS users (
-  id VARCHAR(36) NOT NULL PRIMARY KEY,
-  email VARCHAR(70) NOT NULL
-  password VARCHAR(70) NOT NULL
-  phone_number VARCHAR(200) NOT NULL
-  first_name VARCHAR(200) NOT NULL ,
-  last_name VARCHAR(200) NOT NULL
-  is_admin TINYINT() NOT NULL
-);
